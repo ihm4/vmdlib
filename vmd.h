@@ -8,6 +8,7 @@
 #define _H_VMDLIB_VMD_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // Error definitions and the global variable to store error code
 #define VMDLIB_E_INIT (0x0000)
@@ -54,7 +55,7 @@ extern int VMD_ERROR;
  */
 
 // ヘッダ
-typedef struct VMDHeader_
+typedef struct
 {
   char header[30]; // "Vocaloid Motion Data 0002\0\0\0\0\0" 30byte
   // (MMDver2以前のvmdは"Vocaloid Motion Data file\0")
@@ -63,7 +64,7 @@ typedef struct VMDHeader_
 } VMDHeader;
 
 //ボーンキーフレーム要素データ(111Bytes/要素)
-typedef struct VMDBoneSingleFrame_
+typedef struct
 {
   char name[15]; // "センター\0"などのボーン名の文字列 15byte
   uint32_t frame; // フレーム番号
@@ -96,7 +97,7 @@ typedef struct VMDBoneSingleFrame_
 
 
 //表情キーフレーム要素データ(23Bytes/要素)
-typedef struct VMDMorphSingleFrame_
+typedef struct
 {
   char name[15]; // "まばたき\0"などの表情名の文字列 15byte
   uint32_t frame; // フレーム番号
@@ -105,7 +106,7 @@ typedef struct VMDMorphSingleFrame_
 
 
 //カメラキーフレーム要素データ(61Bytes/要素)
-typedef struct VMDCameraSingleFrame_
+typedef struct
 {
   uint32_t frame; // フレーム番号
   float distance; // 目標点とカメラの距離(目標点がカメラ前面でマイナス)
@@ -139,7 +140,7 @@ typedef struct VMDCameraSingleFrame_
 
 
 //照明キーフレーム要素データ(28Bytes/要素)
-typedef struct VMDLightSingleFrame_
+typedef struct
 {
   uint32_t frame; // フレーム番号
   float r; // 照明色赤(MMD入力値を256で割った値)
@@ -152,21 +153,21 @@ typedef struct VMDLightSingleFrame_
 
 
 //セルフ影キーフレーム要素データ(9Bytes/要素)
-typedef struct VMDShadowSingleFrame_
+typedef struct
 {
   uint32_t frame; // フレーム番号
   char type; // セルフシャドウ種類, 0:OFF, 1:mode1, 2:mode2
   float distance ; // シャドウ距離(MMD入力値Lを(10000-L)/100000とした値)
 } __attribute__((packed)) VMDShadowSingleFrame;
 
-typedef struct VMDInfoIK_
+typedef struct
 {
   char name[20]; // "右足ＩＫ\0"などのIKボーン名の文字列 20byte
   char on_off; // IKのon/off, 0:OFF, 1:ON
 } __attribute__((packed)) VMDInfoIK;
 
 //モデル表示・IK on/offキーフレーム要素データ((9+21*IK数)Bytes/要素)
-typedef struct VMDIKSingleFrame_
+typedef struct
 {
   uint32_t frame; // フレーム番号
   char show; // モデル表示, 0:OFF, 1:ON
@@ -174,38 +175,38 @@ typedef struct VMDIKSingleFrame_
   VMDInfoIK ik; // IK on/off情報配列
 } __attribute__((packed)) VMDIKSingleFrame;
 
-typedef struct VMDBoneFrames_ {
+typedef struct {
   uint32_t           num_frames;
   VMDBoneSingleFrame *frames;
 } __attribute__((packed)) VMDBoneFrames;
 
-typedef struct VMDMorphFrames_ {
+typedef struct {
   uint32_t            num_frames;
   VMDMorphSingleFrame *frames;
 } __attribute__((packed)) VMDMorphFrames;
 
-typedef struct VMDCameraFrames_ {
+typedef struct {
   uint32_t             num_frames;
   VMDCameraSingleFrame *frames;
 } __attribute__((packed)) VMDCameraFrames;
 
-typedef struct VMDLightFrames_ {
+typedef struct {
   uint32_t            num_frames;
   VMDLightSingleFrame *frames;
 } __attribute__((packed)) VMDLightFrames;
 
-typedef struct VMDShadowFrames_ {
+typedef struct {
   uint32_t            num_frames;
   VMDShadowSingleFrame *frames;
 } __attribute__((packed)) VMDShadowFrames;
 
-typedef struct VMDIKFrames_ {
+typedef struct {
   uint32_t             num_frames;
   VMDIKSingleFrame *frames;
 } __attribute__((packed)) VMDIKFrames;
 
 // Whole data
-typedef struct VMDFile_ {
+typedef struct {
   VMDHeader       header;
   VMDBoneFrames   bone_frames;
   VMDMorphFrames  morph_frames;
@@ -234,7 +235,7 @@ int __VMDCompareShadowFrameNumber(const void*, const void*);
 int __VMDCompareIKFrameNumber(const void*, const void*);
 void VMDqsort(void*, size_t, size_t, VMDStructType);
 VMDFile* VMDLoadFromFile(const char*);
-void VMDWriteToFile(VMDFile*, char* );
+bool VMDWriteToFile(VMDFile*, char* );
 void VMDReleaseVMDFile(VMDFile*);
 void VMDSortAllFrames(VMDFile*);
 void VMDDisplayData(VMDFile*);

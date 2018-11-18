@@ -124,6 +124,9 @@ VMDFile* VMDLoadFromFile(const char* fname){
   DEBUG_PRINT("Size of file : %d\n", fsize);
 
   // load entire file, then close
+  // After reading whole file data then copy each structure, this is
+  // inefficient especially for memory usage. But read out each structure data
+  // cause fread() warning (unused return value)
   content = malloc(fsize + 1);
   if ( content == NULL ){
     printf("Insufficient memory.\n");
@@ -131,7 +134,13 @@ VMDFile* VMDLoadFromFile(const char* fname){
     fclose(fp);
     return NULL;
   }
-  fread(content, fsize, 1, fp);
+
+  if (fread(content, fsize, 1, fp) == 0 ) {
+    fprintf(stderr, "File read error\n");
+    fclose(fp);
+    fp = NULL;
+    return NULL;
+  }
   fclose(fp);
   fp = NULL;
 
@@ -145,7 +154,7 @@ VMDFile* VMDLoadFromFile(const char* fname){
 
   // Allocate memory and set data. I don't know proper way to do this(same
   // procedure for differenct type, something like generic functions in C ++),
-  // so codes below are copy-pasted...  I hope someone greate improve this
+  // so codes below are copy-pasted...  I hope someone greate improve this.
   vf = malloc(sizeof(VMDFile));
   cpy_size = sizeof(VMDHeader);
   memcpy((void*)(&vf->header), (const void*)content, cpy_size);
@@ -217,6 +226,7 @@ VMDFile* VMDLoadFromFile(const char* fname){
     vf->ik_frames.frames = NULL;
   }
 
+  free(content);
   return vf;
 }
 
@@ -224,14 +234,14 @@ VMDFile* VMDLoadFromFile(const char* fname){
  * @brief Write data into specified file
  * @param (vf) pointer to VMDFile
  * @param (fname) a name of a file to be written
- * @return void
+ * @return bool : succeed or not
  */
-void VMDWriteToFile(VMDFile *vf, char* fname){
+bool VMDWriteToFile(VMDFile *vf, char* fname){
   FILE *fp;
 
   if ( vf == NULL ) {
     VMD_ERROR = VMDLIB_E_IV;
-    return;
+    return false;
   }
 
   // file check
@@ -239,7 +249,7 @@ void VMDWriteToFile(VMDFile *vf, char* fname){
   if ( fp == NULL ) {
     DEBUG_PRINT("File open error.\n");
     VMD_ERROR = VMDLIB_E_FH;
-    return;
+    return false;
   }
 
   fwrite(&(vf->header), sizeof(VMDHeader), 1, fp);
@@ -288,7 +298,7 @@ void VMDWriteToFile(VMDFile *vf, char* fname){
   fclose(fp);
   fp = NULL;
 
-  return;
+  return true;
 }
 
 /**
@@ -308,6 +318,7 @@ void VMDReleaseVMDFile(VMDFile *vf){
   if (vf->light_frames.frames != NULL) free(vf->light_frames.frames);
   if (vf->shadow_frames.frames != NULL) free(vf->shadow_frames.frames);
   if (vf->ik_frames.frames != NULL) free(vf->ik_frames.frames);
+  free(vf);
   return;
 }
 
