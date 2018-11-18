@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
   vf = VMDLoadFromFile(argv[1]);
   if ( vf == NULL ) {
-    printf("failed to open file");
+    fprintf(stderr, "failed to open file\n");
     exit(EXIT_FAILURE);
   }
   VMDSortAllFrames(vf);
