@@ -69,7 +69,7 @@ int __VMDCompareIKFrameNumber(const void* a, const void* b){
 void VMDqsort(void* data, size_t num, size_t size, VMDStructType type){
   void* funcp = NULL;
   if ( data == NULL ) {
-    DEBUG_PRINT(stderr, "NULL was passed to %s, type was %d\n", __func__, type);
+    DEBUG_PRINT("NULL was passed to %s, type was %d\n", __func__, type);
     return;
   }
 
@@ -112,7 +112,7 @@ VMDFile* VMDLoadFromFile(const char* fname){
   // open file and check
   fp = fopen(fname, "rb");
   if ( fp == NULL ) {
-    DEBUG_PRINT(stderr, "File open error.\n");
+    DEBUG_PRINT("File open error.\n");
     VMD_ERROR = VMDLIB_E_FH;
     return NULL;
   }
@@ -121,7 +121,7 @@ VMDFile* VMDLoadFromFile(const char* fname){
   fseek(fp, 0, SEEK_END);
   fsize = ftell(fp);
   fseek(fp, 0, SEEK_SET);
-  DEBUG_PRINT("Size of file : %d\n", fsize);
+  DEBUG_PRINT("Size of file : %lo\n", fsize);
 
   // load entire file, then close
   // After reading whole file data then copy each structure, this is
@@ -129,14 +129,14 @@ VMDFile* VMDLoadFromFile(const char* fname){
   // cause fread() warning (unused return value)
   content = malloc(fsize + 1);
   if ( content == NULL ){
-    DEBUG_PRINT(stderr, "Insufficient memory.\n");
+    DEBUG_PRINT("Insufficient memory.\n");
     VMD_ERROR = VMDLIB_E_ME;
     fclose(fp);
     return NULL;
   }
 
   if (fread(content, fsize, 1, fp) == 0 ) {
-    DEBUG_PRINT(stderr, "File read error\n");
+    DEBUG_PRINT("File read error\n");
     fclose(fp);
     VMD_ERROR = VMDLIB_E_FH;
     fp = NULL;
